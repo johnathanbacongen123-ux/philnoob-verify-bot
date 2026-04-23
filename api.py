@@ -5,16 +5,19 @@ import os
 import json
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins="*", methods=["GET", "POST", "OPTIONS"], allow_headers=["Content-Type"])
 
 HCAPTCHA_SECRET = os.getenv("HCAPTCHA_SECRET")
 
 # shared token store (in memory)
 tokens = {}
 
-@app.route("/verify", methods=["POST"])
+@app.route("/verify", methods=["POST", "OPTIONS"])
 def verify():
-    data  = request.get_json()
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
+
+    data  = request.get_json(force=True)
     token = data.get("token")
     uid   = data.get("uid")
 
