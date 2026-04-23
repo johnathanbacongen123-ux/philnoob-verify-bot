@@ -153,7 +153,7 @@ class CaptchaView(discord.ui.View):
             label="Complete Captcha",
             emoji="🔗",
             style=discord.ButtonStyle.link,
-            url=f"https://philnoob-verify.github.io/verify/?uid={user_id}&sitekey={HCAPTCHA_SITE_KEY}"
+            url=f"https://johnathanbacongen123-ux.github.io/philnoob-verify/?uid={user_id}&sitekey={HCAPTCHA_SITE_KEY}"
         ))
 
     @discord.ui.button(label="I'm Done", emoji="✅", style=discord.ButtonStyle.success, custom_id="captcha_done")
@@ -164,7 +164,14 @@ class CaptchaView(discord.ui.View):
 
         await interaction.response.defer(ephemeral=True)
 
-        token = pending.get(self.user_id, {}).get("captcha_token")
+        # fetch token from Railway API
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"https://philnoob-verify-bot-production.up.railway.app/token/{self.user_id}"
+            ) as r:
+                result = await r.json()
+                token = result.get("token") if result.get("success") else None
+
         if not token:
             await interaction.followup.send(
                 "❌ No captcha response found. Please click **Complete Captcha** first and solve it!",
